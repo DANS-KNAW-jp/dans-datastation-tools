@@ -15,12 +15,32 @@ class Datasets:
             logging.error(data)
             raise Exception("Quoting problem or too many values.")
         logging.debug(data)
+        type_names = [key for key in data.keys() if key != 'PID' and data[key] is not None]
+
+        compound_fields = {}
+        for type_name in [key for key in type_names if '@' in key]:
+            parent = type_name.split('@')[0]
+            child = type_name.split('@')[1]
+            if parent not in compound_fields.keys():
+                compound_fields[parent] = [{}]
+            for i, value in enumerate(json.loads(data[type_name])):
+                logging.debug(f"parent={parent}, child={child} data={value} {data[type_name]} i={i} {compound_fields}")
+                if len(compound_fields[parent]) == i:
+                    compound_fields[parent].append({})
+                logging.debug(f"parent={parent}, child={child} data={value} {data[type_name]} i={i} {compound_fields}")
+                po = compound_fields[parent]
+                po[i][child] = value
+
+        logging.debug('compound fields')
+        logging.debug(compound_fields)
+
+        # if len(compound_fields.keys()) > 0:
+        #     raise Exception("Compound fields not yet supported.")
+
         all_fields = []
-        for key in [key for key in data.keys() if key != 'PID' and data[key] is not None]:
+        for key in [key for key in type_names if '@' not in key]:
             if data[key].startswith('['):
                 all_fields.append({'typeName': key, 'value': (json.loads(data[key]))})
-            elif '@' in key:
-                raise Exception("Subfields not yet supported.")
             else:
                 all_fields.append({'typeName': key, 'value': data[key]})
         logging.debug(all_fields)

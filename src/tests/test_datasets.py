@@ -62,9 +62,7 @@ class TestDatasets:
                 'author@authorName': 'me',
                 'author@authorAffiliation': 'my organization'}
 
-        with pytest.raises(Exception) as e:
-            datasets.update_metadata(data)
-        assert str(e.value) == 'Subfields not yet supported.'
+        datasets.update_metadata(data)
 
         # test driven expectations below
 
@@ -77,9 +75,10 @@ class TestDatasets:
         #                                    '"authorAffiliation": "my organization"}]}]}\n'
         #                                    '\n')
 
-        assert len(caplog.records) == 1
+        assert len(caplog.records) == 2
         assert caplog.records[0].message == "{'PID': 'doi:10.5072/FK2/8KQW3Y', 'author@authorName': 'me', " \
                                             "'author@authorAffiliation': 'my organization'}"
+        assert caplog.records[1].message == "{'author': ['authorName', 'authorAffiliation']}"
         # assert caplog.records[1].message == "[{'typeName': 'author', 'value': [{'authorName': 'me', " \
         #                                     "'authorAffiliation': 'my organization'}]}]"
 
